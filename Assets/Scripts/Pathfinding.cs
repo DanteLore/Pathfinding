@@ -16,6 +16,8 @@ public class Pathfinding : MonoBehaviour
 
     public Vector3[] FindPath(Vector3 startPosition, Vector3 targetPosition)
     {
+        var sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
         Node startNode = grid.GetNodeFromWorldPoint(startPosition);
         Node targetNode = grid.GetNodeFromWorldPoint(targetPosition);
         bool success = false;
@@ -61,7 +63,12 @@ public class Pathfinding : MonoBehaviour
             }
         }
 
-        return success ? RetracePath(startNode, targetNode) : new Vector3[0];
+        var path = success ? RetracePath(startNode, targetNode) : new Vector3[0];
+
+        sw.Stop();
+        Debug.Log("Pathfinding took " + sw.ElapsedMilliseconds + "ms");
+
+        return path;
     }
 
     private Vector3[] RetracePath(Node startNode, Node endNode)
