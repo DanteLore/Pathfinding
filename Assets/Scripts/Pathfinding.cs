@@ -14,12 +14,7 @@ public class Pathfinding : MonoBehaviour
         requestManager = GetComponent<PathRequestManager>();
     }
 
-    public void StartFindPath(Vector3 startPosition, Vector3 targetPosition)
-    {
-        StartCoroutine(FindPath(startPosition, targetPosition));
-    }
-
-    private IEnumerator FindPath(Vector3 startPosition, Vector3 targetPosition)
+    public Vector3[] FindPath(Vector3 startPosition, Vector3 targetPosition)
     {
         Node startNode = grid.GetNodeFromWorldPoint(startPosition);
         Node targetNode = grid.GetNodeFromWorldPoint(targetPosition);
@@ -66,10 +61,7 @@ public class Pathfinding : MonoBehaviour
             }
         }
 
-        yield return null;
-
-        Vector3[] waypoints = success ? RetracePath(startNode, targetNode) : new Vector3[0];
-        requestManager.FinishedProcessingPath(waypoints, success);
+        return success ? RetracePath(startNode, targetNode) : new Vector3[0];
     }
 
     private Vector3[] RetracePath(Node startNode, Node endNode)

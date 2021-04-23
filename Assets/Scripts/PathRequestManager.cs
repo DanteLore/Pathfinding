@@ -2,56 +2,58 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Threading;
 
 public class PathRequestManager : MonoBehaviour
 {
-    Queue<PathRequest> pathRequests;
-    PathRequest currentPathRequest;
-
-    static PathRequestManager instance;
-    Pathfinding pathfinding;
-    bool isProcessingPath;
+    private Queue<PathResult> pathResults;
+    private static PathRequestManager instance;
+    private Pathfinding pathfinding;
 
     void Awake()
     {
         instance = this;
-        pathRequests = new Queue<PathRequest>();
+        pathResults = new Queue<PathResult>();
         pathfinding = GetComponent<Pathfinding>();
     }
 
-    public static void RequestPath(Vector3 startPoint, Vector3 endPoint, Action<Vector3[], bool> callback)
+    void Update()
     {
-        PathRequest request = new PathRequest(startPoint, endPoint, callback);
-        instance.pathRequests.Enqueue(request);
-        instance.TryProcessNext();
-    }
-
-    private void TryProcessNext()
-    {
-        if(!isProcessingPath && pathRequests.Count > 0)
+        while(pathResults.Count > 0)
         {
-            currentPathRequest = pathRequests.Dequeue();
-            isProcessingPath = true;
-            pathfinding.StartFindPath(currentPathRequest.startPoint, currentPathRequest.endPoint);
+            var result = pathResults.Dequeue();
+            result.callback(result.path);
         }
     }
 
-    public void FinishedProcessingPath(Vector3[] path, bool success)
+    public static void RequestPath(Vector3 startPoint, Vector3 endPoint, Action<Vector3[]> callback)
     {
-        currentPathRequest.callback(path, success);
-        isProcessingPath = false;
-        TryProcessNext();
+        instance.DoRequestPath(startPoint, endPoint, callback);
     }
 
-    struct PathRequest{
-        public Vector3 startPoint;
-        public Vector3 endPoint;
-        public Action<Vector3[], bool> callback;
+    private void DoRequestPath(Vector3 startPoint, Vector3 endPoint, Action<Vector3[]> callback)
+    {
+        ThreadStart threadStart = delegate 
+        { 
+            var path = pathfinding.FindPath(startPoint, endPoint); 
 
-        public PathRequest(Vector3 startPoint, Vector3 endPoint, Action<Vector3[], bool> callback)
+            lock(pathResults)
+            {
+                pathResults.Enqueue(new PathResult(path, callback));
+            }
+        };
+
+        new Thread(threadStart).Start();
+    }
+
+    private struct PathResult 
+    {
+        public Action<Vector3[]> callback;
+        public Vector3[] path;
+
+        public PathResult(Vector3[] path, Action<Vector3[]> callback)
         {
-            this.startPoint = startPoint;
-            this.endPoint = endPoint;
+            this.path = path;
             this.callback = callback;
         }
     }

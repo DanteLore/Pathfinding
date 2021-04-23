@@ -25,10 +25,10 @@ public class Unit : MonoBehaviour
         }
     }
 
-    public void OnPathFound(Vector3[] path, bool success)
+    public void OnPathFound(Vector3[] path)
     {
         pathRequested = false;
-        if(success)
+        if(path.Length > 0)
         {
             currentPathIndex = 0;
             this.path = path;

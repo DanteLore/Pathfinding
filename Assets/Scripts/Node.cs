@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+// TODO: WARNING: The Node class is inherently non-thread safe, as it holds the "index" value used to manage the heap position etc.  If you put the same nodes in multiple heaps, they compete over the index and things explode.
+
 public class Node : IHeapItem<Node>
 {
     public bool isWalkable;
