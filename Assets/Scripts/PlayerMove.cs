@@ -10,8 +10,6 @@ public class PlayerMove : UnitMove
         {
             RaycastHit hit;
 
-            Debug.Log("Doink!");
-
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 10000)) {
                 NavigateTo(hit.point);
             }
