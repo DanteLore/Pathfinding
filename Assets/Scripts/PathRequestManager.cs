@@ -35,10 +35,11 @@ public class PathRequestManager : MonoBehaviour
     {
         ThreadStart threadStart = delegate 
         { 
-            var path = pathfinding.FindPath(startPoint, endPoint); 
-
+            // Lock here basically means one path request at a time - so off the GUI thread, but single thread doing the work.
             lock(pathResults)
             {
+                var path = pathfinding.FindPath(startPoint, endPoint); 
+
                 pathResults.Enqueue(new PathResult(path, callback));
             }
         };
